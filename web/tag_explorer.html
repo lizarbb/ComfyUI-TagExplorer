@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: #2a2a2a;
+            padding: 20px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 10px 15px;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-bar:focus {
+            border-color: #4a9eff;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #2a2a2a;
+            border-right: 1px solid #3a3a3a;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .group {
+            margin-bottom: 5px;
+        }
+
+        .group-header {
+            padding: 12px 15px;
+            background: #333;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .group-header:hover {
+            background: #3a3a3a;
+        }
+
+        .group-name {
+            font-weight: 500;
+        }
+
+        .group-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .random-btn {
+            padding: 4px 8px;
+            background: #4a9eff;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .random-btn:hover {
+            background: #3a8eef;
+        }
+
+        .arrow {
+            transition: transform 0.2s;
+        }
+
+        .arrow.expanded {
+            transform: rotate(90deg);
+        }
+
+        .categories {
+            display: none;
+            padding-left: 15px;
+            margin-bottom: 10px;
+        }
+
+        .categories.visible {
+            display: block;
+        }
+
+        .category {
+            padding: 8px 12px;
+            background: #252525;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category:hover {
+            background: #2f2f2f;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .tags-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tag {
+            padding: 10px 15px;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            word-wrap: break-word;
+        }
+
+        .tag:hover {
+            background: #333;
+            border-color: #4a9eff;
+        }
+
+        .tag.selected {
+            background: #4a9eff;
+            border-color: #4a9eff;
+            color: white;
+        }
+
+        .footer {
+            background: #2a2a2a;
+            border-top: 1px solid #3a3a3a;
+            padding: 20px;
+        }
+
+        .selected-tags {
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            min-height: 60px;
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .last-used {
+            background: #252525;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #a0a0a0;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #4a9eff;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #3a8eef;
+        }
+
+        .btn-secondary {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #4a4a4a;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3a3a3a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Tag Explorer</h1>
+        <input type="text" class="search-bar" id="searchBar" placeholder="Search tags...">
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar" id="sidebar"></div>
+        <div class="content-area" id="contentArea">
+            <div class="empty-state">
+                <h2>Select a category to view tags</h2>
+                <p>Choose a category from the sidebar or use the search bar</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="last-used" id="lastUsed">Last used: None</div>
+        <div class="selected-tags" id="selectedTags">No tags selected</div>
+        <div class="actions">
+            <button class="btn btn-secondary" id="clearBtn">Clear</button>
+            <button class="btn btn-primary" id="sendBtn">Send to ComfyUI</button>
+        </div>
+    </div>
+
+    <script>
+        let tagStructure = { groups: [] };
+        let selectedTags = new Set();
+        let currentCategory = null;
+        let lastUsedTags = "None";
+
+        async function loadTagStructure() {
+            try {
+                const response = await fetch('/tag_explorer/structure');
+                tagStructure = await response.json();
+                renderSidebar();
+            } catch (error) {
+                console.error('Error loading tag structure:', error);
+            }
+        }
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.innerHTML = '';
+
+            tagStructure.groups.forEach(group => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group';
+
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'group-header';
+
+                const groupNameSpan = document.createElement('span');
+                groupNameSpan.className = 'group-name';
+                groupNameSpan.textContent = group.name;
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'group-actions';
+
+                const randomBtn = document.createElement('button');
+                randomBtn.className = 'random-btn';
+                randomBtn.textContent = '🎲';
+                randomBtn.title = 'Random tag from group';
+                randomBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    randomFromGroup(group);
+                };
+
+                const arrow = document.createElement('span');
+                arrow.className = 'arrow';
+                arrow.textContent = '▶';
+
+                actionsDiv.appendChild(randomBtn);
+                groupHeader.appendChild(groupNameSpan);
+                groupHeader.appendChild(actionsDiv);
+                groupHeader.appendChild(arrow);
+
+                const categoriesDiv = document.createElement('div');
+                categoriesDiv.className = 'categories';
+
+                group.categories.forEach(category => {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'category';
+
+                    const categoryName = document.createElement('span');
+                    categoryName.textContent = category.display_name;
+
+                    const categoryRandom = document.createElement('button');
+                    categoryRandom.className = 'random-btn';
+                    categoryRandom.textContent = '🎲';
+                    categoryRandom.title = 'Random tag from category';
+                    categoryRandom.onclick = (e) => {
+                        e.stopPropagation();
+                        randomFromCategory(group, category);
+                    };
+
+                    categoryDiv.appendChild(categoryName);
+                    categoryDiv.appendChild(categoryRandom);
+
+                    categoryDiv.onclick = (e) => {
+                        if (e.target === categoryDiv || e.target === categoryName) {
+                            showCategory(group, category);
+                        }
+                    };
+
+                    categoriesDiv.appendChild(categoryDiv);
+                });
+
+                groupHeader.onclick = () => {
+                    const isVisible = categoriesDiv.classList.contains('visible');
+                    categoriesDiv.classList.toggle('visible');
+                    arrow.classList.toggle('expanded');
+                };
+
+                groupDiv.appendChild(groupHeader);
+                groupDiv.appendChild(categoriesDiv);
+                sidebar.appendChild(groupDiv);
+            });
+        }
+
+        function showCategory(group, category) {
+            currentCategory = { group, category };
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+
+            const title = document.createElement('h2');
+            title.textContent = `${group.name} > ${category.display_name}`;
+            title.style.marginBottom = '20px';
+            title.style.fontSize = '18px';
+            contentArea.appendChild(title);
+
+            const tagsGrid = document.createElement('div');
+            tagsGrid.className = 'tags-grid';
+
+            category.tags.forEach(tag => {
+                const tagDiv = document.createElement('div');
+                tagDiv.className = 'tag';
+                if (selectedTags.has(tag)) {
+                    tagDiv.classList.add('selected');
+                }
+                tagDiv.textContent = tag;
+                tagDiv.onclick = () => toggleTag(tag, tagDiv);
+                tagsGrid.appendChild(tagDiv);
+            });
+
+            contentArea.appendChild(tagsGrid);
+        }
+
+        function toggleTag(tag, element) {
+            if (selectedTags.has(tag)) {
+                selectedTags.delete(tag);
+                element.classList.remove('selected');
+            } else {
+                selectedTags.add(tag);
+                element.classList.add('selected');
+            }
+            updateSelectedTagsDisplay();
+        }
+
+        function randomFromGroup(group) {
+            const allTags = group.categories.flatMap(cat => cat.tags);
+            if (allTags.length > 0) {
+                const randomTag = allTags[Math.floor(Math.random() * allTags.length)];
+                selectedTags.add(randomTag);
+                updateSelectedTagsDisplay();
+                if (currentCategory && currentCategory.group === group) {
+                    showCategory(currentCategory.group, currentCategory.category);
+                }
+            }
+        }
+
+        function randomFromCategory(group, category) {
+            if (category.tags.length > 0) {
+                const randomTag = category.tags[Math.floor(Math.random() * category.tags.length)];
+                selectedTags.add(randomTag);
+                updateSelectedTagsDisplay();
+                if (currentCategory && currentCategory.category === category) {
+                    showCategory(group, category);
+                }
+            }
+        }
+
+        function updateSelectedTagsDisplay() {
+            const selectedTagsDiv = document.getElementById('selectedTags');
+            if (selectedTags.size === 0) {
+                selectedTagsDiv.textContent = 'No tags selected';
+            } else {
+                selectedTagsDiv.textContent = Array.from(selectedTags).join(', ');
+            }
+        }
+
+        function updateLastUsedDisplay() {
+            const lastUsedDiv = document.getElementById('lastUsed');
+            lastUsedDiv.textContent = `Last used: ${lastUsedTags}`;
+        }
+
+        document.getElementById('clearBtn').onclick = () => {
+            selectedTags.clear();
+            updateSelectedTagsDisplay();
+            if (currentCategory) {
+                showCategory(currentCategory.group, currentCategory.category);
+            }
+        };
+
+        document.getElementById('sendBtn').onclick = () => {
+            if (selectedTags.size > 0) {
+                const tagsString = Array.from(selectedTags).join(', ');
+                lastUsedTags = tagsString;
+                updateLastUsedDisplay();
+
+                window.parent.postMessage({
+                    type: 'tag_explorer_tags',
+                    tags: tagsString
+                }, '*');
+
+                alert('Tags sent to ComfyUI!');
+            }
+        };
+
+        const searchBar = document.getElementById('searchBar');
+        searchBar.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            if (searchTerm === '') {
+                if (currentCategory) {
+                    showCategory(currentCategory.group, currentCategory.category);
+                }
+                return;
+            }
+
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = '';
+
+            const title = document.createElement('h2');
+            title.textContent = `Search results for "${searchTerm}"`;
+            title.style.marginBottom = '20px';
+            title.style.fontSize = '18px';
+            contentArea.appendChild(title);
+
+            const tagsGrid = document.createElement('div');
+            tagsGrid.className = 'tags-grid';
+
+            let foundTags = [];
+            tagStructure.groups.forEach(group => {
+                group.categories.forEach(category => {
+                    category.tags.forEach(tag => {
+                        if (tag.toLowerCase().includes(searchTerm)) {
+                            foundTags.push(tag);
+                        }
+                    });
+                });
+            });
+
+            if (foundTags.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = '<h2>No tags found</h2><p>Try a different search term</p>';
+                contentArea.appendChild(emptyState);
+                return;
+            }
+
+            foundTags.forEach(tag => {
+                const tagDiv = document.createElement('div');
+                tagDiv.className = 'tag';
+                if (selectedTags.has(tag)) {
+                    tagDiv.classList.add('selected');
+                }
+                tagDiv.textContent = tag;
+                tagDiv.onclick = () => toggleTag(tag, tagDiv);
+                tagsGrid.appendChild(tagDiv);
+            });
+
+            contentArea.appendChild(tagsGrid);
+        });
+
+        loadTagStructure();
+    </script>
+</body>
+</html>
