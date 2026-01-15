@@ -1,4 +1,4 @@
-clone this
+clone this repo.
 follow this structure inside comfyUI's directory:
 
 wildcards/group_1/your_tags_list.txt
